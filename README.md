@@ -7,7 +7,7 @@
 <p align="center">
   <img src="screenshot.png" alt="报告效果（示例数据生成）" width="600">
   <br>
-  <sub><em>报告效果预览（使用 --sample 模式的示例数据生成）</em></sub>
+  <sub><em>报告效果预览</em></sub>
 </p>
 
 ## 报告包含什么
