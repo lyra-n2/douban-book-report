@@ -4,6 +4,12 @@
 
 一个适配多种 AI agent（Claude Code / Cursor /Openclaw/ 通义灵码 / Trae 等）的本地 skill。通过 Playwright 引导你登录豆瓣，采集本人「读过/在读/想读」全部数据（含仅自己可见），生成一份单文件 HTML 报告，并由 AI agent 基于数据为你生成个性化阅读洞察。
 
+<p align="center">
+  <img src="screenshot.png" alt="报告效果（示例数据生成）" width="600">
+  <br>
+  <sub><em>报告效果预览（使用 --sample 模式的示例数据生成）</em></sub>
+</p>
+
 ## 报告包含什么
 
 **9 个可视化图表**：
