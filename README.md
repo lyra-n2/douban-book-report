@@ -2,7 +2,7 @@
 
 > 用 AI agent 一键生成你的豆瓣读书可视化报告 + 个性化品味洞察
 
-一个适配多种 AI agent（Claude Code / Cursor / Cline / 通义灵码 / Trae 等）的本地 skill。通过 Playwright 引导你登录豆瓣，采集本人「读过/在读/想读」全部数据（含仅自己可见），生成一份单文件 HTML 报告，并由 AI agent 基于数据为你生成个性化阅读洞察。
+一个适配多种 AI agent（Claude Code / Cursor /Openclaw/ 通义灵码 / Trae 等）的本地 skill。通过 Playwright 引导你登录豆瓣，采集本人「读过/在读/想读」全部数据（含仅自己可见），生成一份单文件 HTML 报告，并由 AI agent 基于数据为你生成个性化阅读洞察。
 
 ## 报告包含什么
 
