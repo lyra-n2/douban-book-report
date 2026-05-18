@@ -832,9 +832,9 @@ def main():
     screenshot_images = capture_screenshots(args.output / "douban-report.html", args.output)
     if screenshot_images:
         print(f"✓ 长图已生成：{screenshot_images[0]}")
-        print(f"✓ 分享图已生成（{len(screenshot_images)-1} 张）：")
-        for img in screenshot_images[1:]:
-            print(f"  - {img}")
+        print(f"✓ 分享图已生成（2 张）：")
+        print(f"  - {screenshot_images[1]}（图表）")
+        print(f"  - {screenshot_images[2]}（AI 洞察）")
 
 
 def capture_screenshots(html_path: Path, output_dir: Path) -> list:
@@ -855,18 +855,21 @@ def capture_screenshots(html_path: Path, output_dir: Path) -> list:
         page.screenshot(path=str(full_path), full_page=True)
         results.append(full_path)
 
+        split_y = page.evaluate(
+            "document.getElementById('insights-block')?.getBoundingClientRect().top + window.scrollY || 0"
+        )
         browser.close()
 
     from PIL import Image
     img = Image.open(str(full_path))
     w, total_h = img.size
-    part_count = 4
-    part_h = total_h // part_count
-    for i in range(part_count):
-        y = i * part_h
-        h = part_h if i < part_count - 1 else total_h - y
-        part = img.crop((0, y, w, y + h))
-        part_path = output_dir / f"douban-report-share-{i+1}.png"
+    cut = int(split_y) if split_y else total_h // 2
+    for i, (y0, y1, name) in enumerate([
+        (0, cut, "douban-report-charts.png"),
+        (cut, total_h, "douban-report-insights.png"),
+    ]):
+        part = img.crop((0, y0, w, y1))
+        part_path = output_dir / name
         part.save(str(part_path))
         results.append(part_path)
     return results
