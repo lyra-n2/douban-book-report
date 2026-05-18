@@ -286,20 +286,27 @@ def _safe_int(v):
 def sample_data() -> dict:
     import random
     random.seed(42)
-    authors = ["丹尼尔·卡尼曼", "卡尔维诺", "村上春树", "毛姆", "尤瓦尔·赫拉利", "塔勒布", "博尔赫斯", "卡夫卡", "加缪", "陀思妥耶夫斯基"]
+    read_authors = ["丹尼尔·卡尼曼", "卡尔维诺", "村上春树", "毛姆", "尤瓦尔·赫拉利", "塔勒布", "博尔赫斯", "卡夫卡", "加缪", "陀思妥耶夫斯基"]
+    wish_only_authors = ["普里莫·莱维", "安妮·迪拉德", "帕特里克·莫迪亚诺", "汪曾祺", "凯文·凯利", "苏珊·桑塔格", "上野千鹤子"]
     publishers = ["中信出版社", "上海译文出版社", "人民文学出版社", "南海出版公司", "广西师范大学出版社"]
     tags_pool = ["心理学", "哲学", "小说", "认知科学", "历史", "经济学", "随笔", "传记", "科幻", "社会学"]
 
     books = []
     for i in range(120):
+        status = random.choices(["collect", "do", "wish"], weights=[0.8, 0.05, 0.15])[0]
+        # 想读列表 60% 概率用 wish-only 作者，更贴近真实场景
+        if status == "wish" and random.random() < 0.6:
+            author = random.choice(wish_only_authors)
+        else:
+            author = random.choice(read_authors)
         year = random.randint(2018, 2025)
         month = random.randint(1, 12)
         day = random.randint(1, 28)
         books.append({
             "title": f"示例书籍 {i+1}",
             "book_id": str(1000000 + i),
-            "status": random.choices(["collect", "do", "wish"], weights=[0.8, 0.05, 0.15])[0],
-            "author": random.choice(authors),
+            "status": status,
+            "author": author,
             "publisher": random.choice(publishers),
             "pub_year": random.randint(1980, 2024),
             "douban_rating": round(random.uniform(6.5, 9.5), 1),
