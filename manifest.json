@@ -1,0 +1,14 @@
+{
+  "name": "douban-reading",
+  "version": "0.1.0",
+  "description": "通过 Playwright 登录采集豆瓣读书本人数据，生成阅读品味可视化 HTML 报告。",
+  "entrypoint": "scripts/generate_douban_report.py",
+  "requires_env": [],
+  "optional_env": ["HTTPS_PROXY", "HTTP_PROXY"],
+  "modes": ["login", "csv", "sample"],
+  "artifacts": [
+    "reports/douban-report.html",
+    "reports/douban-report-data.json",
+    "reports/douban-raw-summary.json"
+  ]
+}
