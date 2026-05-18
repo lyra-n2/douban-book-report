@@ -520,6 +520,12 @@ h3 { font-size: 18px; margin-top: 32px; color: var(--blue); }
 .stale-title { font-weight: 500; }
 .stale-meta { color: var(--muted); font-size: 13px; }
 .stale-years { color: var(--red); font-weight: 600; min-width: 80px; text-align: right; }
+.insights-standalone {
+  margin-top: 60px; padding-top: 40px; border-top: 3px solid var(--blue);
+}
+.insights-title {
+  color: var(--blue); font-size: 28px; margin-bottom: 24px; border-left: none; padding-left: 0; text-align: center;
+}
 .insights-placeholder {
   background: #fff; border: 1px dashed #c4b89e; border-radius: 4px;
   padding: 24px; margin: 16px 0 40px; color: var(--ink);
@@ -583,14 +589,18 @@ h3 { font-size: 18px; margin-top: 32px; color: var(--blue); }
 <h3>想读但一本都没读过的作者 Top 10</h3>
 <div id="chart-wish-authors" class="chart"></div>
 
-<h2>六 · AI 品味洞察</h2>
+<div class="footer">本报告基于本人豆瓣账号数据生成，仅供个人复盘使用。</div>
+
+<div id="insights-split-marker"></div>
+<div class="insights-standalone">
+<h2 class="insights-title">AI 品味洞察</h2>
 <div class="insights-placeholder" id="insights-block">
-  <p><em>此区块由 Claude 基于你的阅读数据生成，包含品味画像、想读优先级建议和阅读盲区分析。</em></p>
+  <p><em>此区块由 AI 基于你的阅读数据生成，包含品味画像、想读优先级建议和阅读盲区分析。</em></p>
   <p><strong>生成方法</strong>：在 Claude Code 中说「读 <code>__OUTPUT_DIR__/douban-raw-books.json</code>，按 SKILL.md 第 7 步生成洞察并写入 douban-insights.md」，刷新本页即可看到。</p>
   <div id="insights-content"></div>
 </div>
-
-<div class="footer">本报告基于本人豆瓣账号数据生成，仅供个人复盘使用。</div>
+<div class="footer">基于 AI 对阅读数据的分析生成，结论仅供参考。</div>
+</div>
 
 <script>
 window.addEventListener('echarts-ready', () => {
@@ -856,7 +866,7 @@ def capture_screenshots(html_path: Path, output_dir: Path) -> list:
         results.append(full_path)
 
         split_y = page.evaluate(
-            "document.getElementById('insights-block')?.getBoundingClientRect().top + window.scrollY || 0"
+            "document.getElementById('insights-split-marker')?.getBoundingClientRect().top + window.scrollY || 0"
         )
         browser.close()
 
