@@ -802,6 +802,10 @@ def render_html(agg: dict, output_dir: Path) -> str:
     insights_path = output_dir / "douban-insights.md"
     insights_md = insights_path.read_text(encoding="utf-8") if insights_path.exists() else ""
     insights_md = _md_tables_to_html(insights_md)
+    insights_md = insights_md.replace(
+        "## 同款推荐",
+        '<div id="insights-mid-marker"></div>\n\n## 同款推荐',
+    )
     html = html.replace("__INSIGHTS_MD__", json.dumps(insights_md, ensure_ascii=False))
     return html
 
@@ -842,9 +846,10 @@ def main():
     screenshot_images = capture_screenshots(args.output / "douban-report.html", args.output)
     if screenshot_images:
         print(f"✓ 长图已生成：{screenshot_images[0]}")
-        print(f"✓ 分享图已生成（2 张）：")
+        print(f"✓ 分享图已生成（3 张）：")
         print(f"  - {screenshot_images[1]}（图表）")
-        print(f"  - {screenshot_images[2]}（AI 洞察）")
+        print(f"  - {screenshot_images[2]}（AI 洞察上）")
+        print(f"  - {screenshot_images[3]}（AI 洞察下）")
 
 
 def capture_screenshots(html_path: Path, output_dir: Path) -> list:
@@ -865,19 +870,24 @@ def capture_screenshots(html_path: Path, output_dir: Path) -> list:
         page.screenshot(path=str(full_path), full_page=True)
         results.append(full_path)
 
-        split_y = page.evaluate(
+        split_y1 = page.evaluate(
             "document.getElementById('insights-split-marker')?.getBoundingClientRect().top + window.scrollY || 0"
+        )
+        split_y2 = page.evaluate(
+            "document.getElementById('insights-mid-marker')?.getBoundingClientRect().top + window.scrollY || 0"
         )
         browser.close()
 
     from PIL import Image
     img = Image.open(str(full_path))
     w, total_h = img.size
-    cut = int(split_y) if split_y else total_h // 2
-    for i, (y0, y1, name) in enumerate([
-        (0, cut, "douban-report-charts.png"),
-        (cut, total_h, "douban-report-insights.png"),
-    ]):
+    cut1 = int(split_y1) if split_y1 else total_h // 3
+    cut2 = int(split_y2) if split_y2 else total_h * 2 // 3
+    for y0, y1, name in [
+        (0, cut1, "douban-report-charts.png"),
+        (cut1, cut2, "douban-report-insights-1.png"),
+        (cut2, total_h, "douban-report-insights-2.png"),
+    ]:
         part = img.crop((0, y0, w, y1))
         part_path = output_dir / name
         part.save(str(part_path))
