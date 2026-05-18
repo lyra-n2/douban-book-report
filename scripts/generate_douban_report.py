@@ -527,6 +527,10 @@ h3 { font-size: 18px; margin-top: 32px; color: var(--blue); }
 .insights-placeholder code { background: #f0ead9; padding: 2px 6px; border-radius: 2px; font-size: 13px; }
 #insights-content { margin-top: 16px; }
 #insights-content h3, #insights-content h4 { color: var(--blue); }
+#insights-content table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+#insights-content th, #insights-content td { border: 1px solid #e0d8c8; padding: 8px 10px; text-align: left; }
+#insights-content th { background: var(--bg-light, #faf6ee); font-weight: 600; }
+#insights-content tr:hover td { background: #faf6ee; }
 @media (max-width: 768px) {
   .kpi-row { grid-template-columns: repeat(2, 1fr); }
   body { padding: 20px 12px; }
@@ -745,6 +749,36 @@ function simpleMarkdown(md) {
 """
 
 
+def _md_tables_to_html(md: str) -> str:
+    import re
+    lines = md.split("\n")
+    out, tbl = [], []
+
+    def flush():
+        if len(tbl) >= 2 and re.match(r"^[\s|:-]+$", tbl[1].strip().strip("|")):
+            parse = lambda r: [c.strip() for c in r.strip().strip("|").split("|")]
+            hdr = parse(tbl[0])
+            h = "<table><thead><tr>" + "".join(f"<th>{c}</th>" for c in hdr) + "</tr></thead><tbody>"
+            for row in tbl[2:]:
+                cells = parse(row)
+                h += "<tr>" + "".join(f"<td>{c}</td>" for c in cells) + "</tr>"
+            out.append(h + "</tbody></table>")
+        else:
+            out.extend(tbl)
+        tbl.clear()
+
+    for line in lines:
+        if line.strip().startswith("|"):
+            tbl.append(line)
+        else:
+            if tbl:
+                flush()
+            out.append(line)
+    if tbl:
+        flush()
+    return "\n".join(out)
+
+
 def render_html(agg: dict, output_dir: Path) -> str:
     html = HTML_TEMPLATE
     html = html.replace("__GENERATED_AT__", agg["generated_at"])
@@ -757,6 +791,7 @@ def render_html(agg: dict, output_dir: Path) -> str:
 
     insights_path = output_dir / "douban-insights.md"
     insights_md = insights_path.read_text(encoding="utf-8") if insights_path.exists() else ""
+    insights_md = _md_tables_to_html(insights_md)
     html = html.replace("__INSIGHTS_MD__", json.dumps(insights_md, ensure_ascii=False))
     return html
 
@@ -793,6 +828,48 @@ def main():
     )
 
     print(f"\n✓ 报告已生成：{args.output / 'douban-report.html'}")
+
+    screenshot_images = capture_screenshots(args.output / "douban-report.html", args.output)
+    if screenshot_images:
+        print(f"✓ 长图已生成：{screenshot_images[0]}")
+        print(f"✓ 分享图已生成（{len(screenshot_images)-1} 张）：")
+        for img in screenshot_images[1:]:
+            print(f"  - {img}")
+
+
+def capture_screenshots(html_path: Path, output_dir: Path) -> list:
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print("\n⚠ 未安装 Playwright，跳过截图生成")
+        return []
+
+    results = []
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={"width": 1200, "height": 800})
+        page.goto(f"file://{html_path.resolve()}")
+        page.wait_for_timeout(3000)
+
+        full_path = output_dir / "douban-report-full.png"
+        page.screenshot(path=str(full_path), full_page=True)
+        results.append(full_path)
+
+        browser.close()
+
+    from PIL import Image
+    img = Image.open(str(full_path))
+    w, total_h = img.size
+    part_count = 4
+    part_h = total_h // part_count
+    for i in range(part_count):
+        y = i * part_h
+        h = part_h if i < part_count - 1 else total_h - y
+        part = img.crop((0, y, w, y + h))
+        part_path = output_dir / f"douban-report-share-{i+1}.png"
+        part.save(str(part_path))
+        results.append(part_path)
+    return results
 
 
 if __name__ == "__main__":
